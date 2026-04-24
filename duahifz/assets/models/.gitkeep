@@ -1,0 +1,9 @@
+# Model files should be placed here:
+# - silero_vad.onnx
+# - tiny-ar-quran-encoder.int8.onnx
+# - tiny-ar-quran-decoder.int8.onnx
+# - tokens.txt
+#
+# These files are not included in the repository due to size.
+# Please copy them from your local directory:
+# C:\USERS\SALEXT\PRV\APPSR\DIKR\PRJ\DUAHIFZ_MVP\DUAHIFZ\ASSETS\models\
