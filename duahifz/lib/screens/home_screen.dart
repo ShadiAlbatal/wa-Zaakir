@@ -33,7 +33,14 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, provider, child) {
           if (provider.duas.isEmpty) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading Duas...'),
+                ],
+              ),
             );
           }
 
@@ -67,14 +74,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    provider.selectDua(dua);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RecitationScreen(),
-                      ),
-                    );
+                  onTap: () async {
+                    await provider.selectDua(dua);
+                    if (mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RecitationScreen(),
+                        ),
+                      );
+                    }
                   },
                 ),
               );

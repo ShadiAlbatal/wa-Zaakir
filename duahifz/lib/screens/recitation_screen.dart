@@ -6,8 +6,28 @@ import '../widgets/recitation_controls.dart';
 import '../widgets/progress_indicator.dart';
 
 /// Screen for reciting and memorizing a selected Dua
-class RecitationScreen extends StatelessWidget {
+class RecitationScreen extends StatefulWidget {
   const RecitationScreen({super.key});
+
+  @override
+  State<RecitationScreen> createState() => _RecitationScreenState();
+}
+
+class _RecitationScreenState extends State<RecitationScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize speech recognition when screen loads
+    _initializeSpeechRecognition();
+  }
+
+  Future<void> _initializeSpeechRecognition() async {
+    final provider = context.read<DuaProvider>();
+    
+    // Use assets path for models - in production, copy to accessible location first
+    const modelPath = '/data/user/0/com.duahifz.app/files/models';
+    await provider.initializeSpeechRecognition(modelPath);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,10 +101,9 @@ class RecitationScreen extends StatelessWidget {
                         isListening: provider.isListening,
                         textVisible: provider.textVisible,
                         onToggleText: () => provider.toggleTextVisibility(),
-                        onToggleListening: () {
-                          // This would trigger native Android speech recognition
-                          // For now, just toggle the state
-                          provider.setListening(!provider.isListening);
+                        onToggleListening: () async {
+                          // Toggle listening state through provider
+                          await provider.setListening(!provider.isListening);
                         },
                       ),
                     ],
@@ -96,5 +115,12 @@ class RecitationScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Cleanup speech recognition
+    context.read<DuaProvider>().setListening(false);
+    super.dispose();
   }
 }
