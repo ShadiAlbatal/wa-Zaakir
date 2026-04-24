@@ -1,88 +1,33 @@
-# Flutter/Dart
-.dart_tool/
-.build/
-flutter/
-packages/
-**/lib/**/.dart_tool/
+```
+# Build artifacts
+*.dart_tool/
+*.build/
+build/
 
-# Android
-android/.gradle
-android/build/
-android/app/build/
-*.keystore
-*.jks
+# Dependencies
+pubspec.lock
 
-# iOS
-ios/Pods/
-ios/build/
-*.xcodeproj/
-*.xcworkspace/
-
-# Temporary files
-*.tmp
-*.temp
+# Logs and temp files
 *.log
+*.tmp
 
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
 
-# IDE
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Build outputs
-dist/
-build/
-target/
-out/
-
-# Dependencies
-node_modules/
-**/node_modules/
-venv/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-
-# Testing
+# Coverage
 coverage/
-htmlcov/
-.coverage
-*.gcda
-*.gcno
 
-# Compression
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+```

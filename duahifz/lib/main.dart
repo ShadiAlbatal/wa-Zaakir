@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, Directory;
 import 'package:path_provider/path_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/recitation_screen.dart';
