@@ -303,16 +303,18 @@ class SpeechRecognitionService(private val context: Context) {
             val randomWord = expectedWords.random()
             lastRecognizedText = randomWord
             
-            // Notify Flutter via handler
+            // Notify Flutter via handler using callbacks
             android.os.Handler(android.os.Looper.getMainLooper()).post {
                 try {
-                    eventSink?.success(mapOf(
-                        "type" to "recognition",
-                        "text" to randomWord,
-                        "confidence" to 0.85
-                    ))
+                    onRecognitionResult?.invoke(randomWord)
+                    
+                    // Also check word matching
+                    val isMatch = normalizeArabicText(randomWord) == normalizeArabicText(expectedWord)
+                    if (isMatch && expectedWord.isNotEmpty()) {
+                        onWordRecognized?.invoke(randomWord, expectedWordIndex, true)
+                    }
                 } catch (e: Exception) {
-                    // Event sink might be null
+                    Log.e(TAG, "Error in recognition callback", e)
                 }
             }
         }.start()
