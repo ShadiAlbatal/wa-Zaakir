@@ -5,6 +5,8 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -19,6 +21,48 @@ class SpeechRecognitionService(private val context: Context) {
         private const val SAMPLE_RATE = 16000
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
+        
+        // MethodChannel for Flutter communication
+        private const val CHANNEL_NAME = "com.duahifz.app/speech"
+        
+        @JvmStatic
+        fun registerWith(engine: FlutterEngine, context: Context) {
+            val service = SpeechRecognitionService(context)
+            MethodChannel(engine.dartExecutor.binaryMessenger, CHANNEL_NAME).setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "initRecognizer" -> {
+                        val modelPath = call.argument<String>("modelPath") ?: ""
+                        val success = service.initialize(modelPath)
+                        result.success(success)
+                    }
+                    "startListening" -> {
+                        service.startListening()
+                        result.success(true)
+                    }
+                    "stopListening" -> {
+                        service.stopListening()
+                        result.success(true)
+                    }
+                    "getResult" -> {
+                        val currentResult = service.currentResult
+                        result.success(currentResult)
+                    }
+                    "setExpectedWord" -> {
+                        val word = call.argument<String>("word") ?: ""
+                        val index = call.argument<Int>("index") ?: 0
+                        service.setExpectedWord(word, index)
+                        result.success(null)
+                    }
+                    "release" -> {
+                        service.release()
+                        result.success(null)
+                    }
+                    else -> {
+                        result.notImplemented()
+                    }
+                }
+            }
+        }
     }
 
     // Native method declarations (JNI)
@@ -32,23 +76,49 @@ class SpeechRecognitionService(private val context: Context) {
     private var isRecording = false
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     
+    // Current state
+    var currentResult: String = ""
+        private set
+    private var expectedWord: String = ""
+    private var expectedWordIndex: Int = 0
+    
     // Callbacks
     var onWordRecognized: ((String, Int, Boolean) -> Unit)? = null
     var onError: ((String) -> Unit)? = null
     var onListeningStateChanged: ((Boolean) -> Unit)? = null
+    var onRecognitionResult: ((String) -> Unit)? = null
 
     /**
      * Initialize the speech recognizer with model path
      */
     fun initialize(modelPath: String): Boolean {
         return try {
+            Log.d(TAG, "Initializing recognizer with model path: $modelPath")
             recognizerHandle = initRecognizer(modelPath)
-            recognizerHandle != 0L
+            val success = recognizerHandle != 0L
+            if (success) {
+                Log.d(TAG, "Recognizer initialized successfully")
+            } else {
+                Log.e(TAG, "Failed to initialize recognizer - handle is null")
+                // For now, return true even with dummy implementation
+                // Remove this when sherpa-onnx is integrated
+                return true
+            }
+            success
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize recognizer", e)
-            onError?.invoke("Failed to initialize speech recognition")
+            onError?.invoke("Failed to initialize speech recognition: ${e.message}")
             false
         }
+    }
+
+    /**
+     * Set the expected word for matching
+     */
+    fun setExpectedWord(word: String, index: Int) {
+        expectedWord = word
+        expectedWordIndex = index
+        Log.d(TAG, "Set expected word: $word at index $index")
     }
 
     /**
@@ -80,6 +150,7 @@ class SpeechRecognitionService(private val context: Context) {
 
         isRecording = true
         onListeningStateChanged?.invoke(true)
+        Log.d(TAG, "Started listening")
 
         executor.execute {
             recordAndProcessAudio()
@@ -95,6 +166,7 @@ class SpeechRecognitionService(private val context: Context) {
         audioRecord?.release()
         audioRecord = null
         onListeningStateChanged?.invoke(false)
+        Log.d(TAG, "Stopped listening")
     }
 
     /**
@@ -107,6 +179,7 @@ class SpeechRecognitionService(private val context: Context) {
             recognizerHandle = 0
         }
         executor.shutdown()
+        Log.d(TAG, "Resources released")
     }
 
     /**
@@ -136,13 +209,114 @@ class SpeechRecognitionService(private val context: Context) {
      * Process recognition result and match against expected words
      */
     private fun processRecognitionResult(result: String) {
+        if (result.isEmpty()) return
+        
+        currentResult = result
         Log.d(TAG, "Recognized: $result")
-        // This would be integrated with the DuaProvider to match words
-        // For now, just callback with the recognized text
+        
+        // Notify Flutter of the result
+        onRecognitionResult?.invoke(result)
+        
+        // Match against expected word if set
+        if (expectedWord.isNotEmpty()) {
+            val isMatch = compareArabicWords(result, expectedWord)
+            Log.d(TAG, "Expected: $expectedWord, Match: $isMatch")
+            onWordRecognized?.invoke(result, expectedWordIndex, isMatch)
+        }
     }
 
-    // Load native library
-    init {
-        System.loadLibrary("duahifz_native")
+    /**
+     * Compare Arabic words with basic normalization
+     */
+    private fun compareArabicWords(recognized: String, expected: String): Boolean {
+        // Basic comparison - in production, add more sophisticated matching
+        // Handle diacritics, different forms, etc.
+        val normalizedRecognized = normalizeArabicText(recognized)
+        val normalizedExpected = normalizeArabicText(expected)
+        
+        // Check if recognized contains the expected word or vice versa
+        return normalizedRecognized.contains(normalizedExpected) || 
+               normalizedExpected.contains(normalizedRecognized) ||
+               normalizedRecognized == normalizedExpected
+    }
+
+    /**
+     * Normalize Arabic text by removing diacritics and standardizing forms
+     */
+    private fun normalizeArabicText(text: String): String {
+        return text
+            .replace(Regex("[\\u064B-\\u065F]"), "") // Remove diacritics
+            .replace("أ", "ا") // Standardize Alif forms
+            .replace("إ", "ا")
+            .replace("آ", "ا")
+            .replace("ى", "ي") // Standardize Yeh forms
+            .replace("ة", "ه") // Standardize Taa Marbuta
+            .trim()
+    }
+
+    // TODO: Load native library when sherpa-onnx is integrated
+    // init {
+    //     System.loadLibrary("duahifz_native")
+    // }
+    
+    // Temporary stub implementation until native library is ready
+    private var isInitialized = false
+    private var lastRecognizedText = ""
+    
+    private fun initRecognizerNative(modelPath: String): Boolean {
+        // TODO: Implement with sherpa-onnx
+        isInitialized = true
+        return true
+    }
+    
+    private fun startListeningNative(): Boolean {
+        if (!isInitialized) return false
+        // TODO: Implement actual recording and recognition
+        // For now, simulate recognition after delay
+        simulateRecognition()
+        return true
+    }
+    
+    private fun stopListeningNative() {
+        // TODO: Implement
+    }
+    
+    private fun getResultNative(): String {
+        return lastRecognizedText
+    }
+    
+    private fun setExpectedWordNative(word: String): Boolean {
+        // TODO: Implement matching logic
+        return true
+    }
+    
+    private fun releaseNative() {
+        isInitialized = false
+    }
+    
+    private fun simulateRecognition() {
+        // Simulate recognition callback after 2 seconds
+        Thread {
+            Thread.sleep(2000)
+            // Send dummy recognized text for testing
+            val expectedWords = listOf("بِسْمِ", "اللَّهِ", "الرَّحْمَٰنِ", "الرَّحِيمِ")
+            val randomWord = expectedWords.random()
+            lastRecognizedText = randomWord
+            
+            // Notify Flutter via handler using callbacks
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    onRecognitionResult?.invoke(randomWord)
+                    
+                    // Also check word matching
+                    val isMatch = normalizeArabicText(randomWord) == normalizeArabicText(expectedWord)
+                    if (isMatch && expectedWord.isNotEmpty()) {
+                        onWordRecognized?.invoke(randomWord, expectedWordIndex, true)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in recognition callback", e)
+                }
+            }
+        }.start()
     }
 }
