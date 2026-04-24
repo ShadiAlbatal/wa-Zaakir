@@ -1,0 +1,39 @@
+{
+  "duas": [
+    {
+      "id": "dua_1",
+      "title": "Bismillah",
+      "arabicText": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      "translation": "In the name of Allah, the Most Gracious, the Most Merciful",
+      "words": ["بِسْمِ", "اللَّهِ", "الرَّحْمَٰنِ", "الرَّحِيمِ"]
+    },
+    {
+      "id": "dua_2",
+      "title": "Alhamdulillah",
+      "arabicText": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      "translation": "All praise is due to Allah, Lord of the worlds",
+      "words": ["الْحَمْدُ", "لِلَّهِ", "رَبِّ", "الْعَالَمِينَ"]
+    },
+    {
+      "id": "dua_3",
+      "title": "Ayat al-Kursi (Part 1)",
+      "arabicText": "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ",
+      "translation": "Allah - there is no deity except Him, the Ever-Living, the Sustainer of existence",
+      "words": ["اللَّهُ", "لَا", "إِلَٰهَ", "إِلَّا", "هُوَ", "الْحَيُّ", "الْقَيُّومُ"]
+    },
+    {
+      "id": "dua_4",
+      "title": "Before Sleeping",
+      "arabicText": "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
+      "translation": "In Your name, O Allah, I die and I live",
+      "words": ["بِاسْمِكَ", "اللَّهُمَّ", "أَمُوتُ", "وَأَحْيَا"]
+    },
+    {
+      "id": "dua_5",
+      "title": "After Waking Up",
+      "arabicText": "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+      "translation": "All praise is for Allah who gave us life after having given us death and unto Him is the resurrection",
+      "words": ["الْحَمْدُ", "لِلَّهِ", "الَّذِي", "أَحْيَانَا", "بَعْدَ", "مَا", "أَمَاتَنَا", "وَإِلَيْهِ", "النُّشُورُ"]
+    }
+  ]
+}

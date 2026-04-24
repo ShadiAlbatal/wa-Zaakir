@@ -1,1 +1,51 @@
-Nothing needs to be added to .gitignore since only a README.md file was modified and no build artifacts, dependencies, or temporary files were included in the changes.
+```
+# Flutter/Dart
+.dart_tool/
+.build/
+bin/cache/
+bin/internal/
+lib/src/generated/
+test/.dart_tool/
+coverage/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+*.keystore
+
+# iOS
+ios/Pods/
+ios/build/
+*.xcodeproj/
+*.xcworkspace/
+
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.env
+.env.local
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+.tox/
+.coverage
+htmlcov/
+```
