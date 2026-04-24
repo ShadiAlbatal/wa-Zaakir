@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
-import 'screens/recitation_screen.dart';
 import 'services/dua_provider.dart';
 
 void main() {
