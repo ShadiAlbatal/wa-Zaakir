@@ -254,8 +254,67 @@ class SpeechRecognitionService(private val context: Context) {
             .trim()
     }
 
-    // Load native library
-    init {
-        System.loadLibrary("duahifz_native")
+    // TODO: Load native library when sherpa-onnx is integrated
+    // init {
+    //     System.loadLibrary("duahifz_native")
+    // }
+    
+    // Temporary stub implementation until native library is ready
+    private var isInitialized = false
+    private var lastRecognizedText = ""
+    
+    private fun initRecognizerNative(modelPath: String): Boolean {
+        // TODO: Implement with sherpa-onnx
+        isInitialized = true
+        return true
+    }
+    
+    private fun startListeningNative(): Boolean {
+        if (!isInitialized) return false
+        // TODO: Implement actual recording and recognition
+        // For now, simulate recognition after delay
+        simulateRecognition()
+        return true
+    }
+    
+    private fun stopListeningNative() {
+        // TODO: Implement
+    }
+    
+    private fun getResultNative(): String {
+        return lastRecognizedText
+    }
+    
+    private fun setExpectedWordNative(word: String): Boolean {
+        // TODO: Implement matching logic
+        return true
+    }
+    
+    private fun releaseNative() {
+        isInitialized = false
+    }
+    
+    private fun simulateRecognition() {
+        // Simulate recognition callback after 2 seconds
+        Thread {
+            Thread.sleep(2000)
+            // Send dummy recognized text for testing
+            val expectedWords = listOf("بِسْمِ", "اللَّهِ", "الرَّحْمَٰنِ", "الرَّحِيمِ")
+            val randomWord = expectedWords.random()
+            lastRecognizedText = randomWord
+            
+            // Notify Flutter via handler
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    eventSink?.success(mapOf(
+                        "type" to "recognition",
+                        "text" to randomWord,
+                        "confidence" to 0.85
+                    ))
+                } catch (e: Exception) {
+                    // Event sink might be null
+                }
+            }
+        }.start()
     }
 }
